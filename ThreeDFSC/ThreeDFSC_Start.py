@@ -241,7 +241,7 @@ def main():
             try:
                 numba.cuda.select_device(gpu_id)
             except:
-                raise BaseException(
+                raise Exception(
                     "\n\nGPU ID %s does not exist. Make sure CUDA and Numba are installed correctly, and then check available GPU's with `nvidia-smi`.\n\n" % gpu_id)
         else:
             print("Auto-detecting GPU ID")
