@@ -4,7 +4,8 @@ This is the most recent version of 3DFSC, by Philip Baldwin, Yong Zi Tan, and Dm
 
 GPU code and Conda environment by Carl Negro.
 
-3DFSC Program Suite requires Anaconda 3 to run, and UCSF Chimera to visualize the outputs.
+
+Important: this version of the software has been modified to work with updated dependencies (july 2023).
 
 ## Installation ##
 
@@ -23,7 +24,7 @@ GPU code and Conda environment by Carl Negro.
 
 ## GPU Execution ##
 
-3DFSC now has GPU support through Numba for faster execution (typically ~10x faster than the CPU implementation). This requires that CUDA is installed correctly. See http://www.nvidia.com/Download/index.aspx. 
+3DFSC now has GPU support through Numba for faster execution (typically ~10x faster than the CPU implementation). This requires that CUDA is installed correctly. See http://www.nvidia.com/Download/index.aspx.
 
 To make use of a GPU, simply append the `--gpu` flag as a parameter to your ./run3DFSC.sh script.
 
@@ -31,7 +32,7 @@ You can select which GPU to use for processing with the `--gpu_id` flag. E.g. `-
 
 To see a list of available GPU's and corresponding indices, run `nvidia-smi`. If you are unable to run `nvidia-smi`, check to make sure you have CUDA installed correctly. See http://www.nvidia.com/Download/index.aspx.
 
-Note that GPU memory is limited, so that processing jobs with large box sizes will fail. 
+Note that GPU memory is limited, so that processing jobs with large box sizes will fail.
 
 ## Example: Haemagglutinin Trimer with Preferred Orientation Collected at Tilts ##
 
