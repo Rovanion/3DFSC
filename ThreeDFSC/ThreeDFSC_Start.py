@@ -9,7 +9,7 @@
 ### Anaconda environment and Numba CUDA support by Carl Negro
 ### Downloaded from https://github.com/nysbc/Anisotropy
 ### git clone https://github.com/nysbc/Anisotropy.git
-### 
+###
 ### See Paper:
 ### Addressing preferred specimen orientation in single-particle cryo-EM through tilting
 ### 10.1038/nmeth.4347
@@ -19,8 +19,8 @@
 ### 2) mrcfile 1.0.0 by Colin Palmer (https://github.com/ccpem/mrcfile)
 ###
 ### Version 3.0 (7 March 2018)
-### 
-### Revisions 
+###
+### Revisions
 ### 1.1 - Added mpl.use('Agg') to allow matplotlib to be used without X-server
 ###     - Added Sum of Standard Deviation
 ### 1.2 - Added FSCCutoff Option
@@ -62,7 +62,7 @@ def masking(inmrc,mask,masked_outmrc):
     inputmrc = (mrcfile.open(inmrc)).data
     mask = (mrcfile.open(mask)).data
     outarray = np.multiply(inputmrc,mask)
-    
+
     mrc_write = mrcfile.new(masked_outmrc,overwrite=True)
     mrc_write.set_data(outarray.astype('<f4'))
     mrc_write.close()
@@ -77,20 +77,20 @@ def execute(options):
     click.echo(click.style("Published article at http://doi.org/10.1038/nmeth.4347"))
     click.echo(click.style("Anaconda 3 is required to run this program, and UCSF Chimera to visualize some outputs. Please install them if they are not present."))
     click.echo(click.style("Please be patient: Program usually finishes in minutes, but can take up to hours to run for extremely large box sizes."))
-    
+
     # Part 00: Check and Administration
-    
+
     # Check required inputs
     if (None in (options.halfmap1, options.halfmap2, options.fullmap, options.apix)):
             click.echo(click.style("\nError: A required input is missing.\n",fg="red"))
             parser.print_help()
             sys.exit()
-    
+
     # Convert file paths to absolutes
     halfmap1_pre = os.path.abspath(str(options.halfmap1))
     halfmap2_pre = os.path.abspath(str(options.halfmap2))
     fullmap = os.path.abspath(str(options.fullmap))
-    
+
     # Masking
     if (bool(options.mask) == False):
             halfmap1 = halfmap1_pre
@@ -100,7 +100,7 @@ def execute(options):
             halfmap1 = masking(options.halfmap1,mask,options.halfmap1[:-4] + "_masked.mrc")
             halfmap2 = masking(options.halfmap2,mask,options.halfmap2[:-4] + "_masked.mrc")
             print ("\nMasking performed: " + options.halfmap1[:-4] + "_masked.mrc and " + options.halfmap2[:-4] + "_masked.mrc generated.")
-    
+
     # Check half maps are unique
     if halfmap1 == halfmap2:
             click.echo(click.style("\nError: Both your half maps point to the same file.\n",fg="red"))
@@ -114,7 +114,7 @@ def execute(options):
     if nxf != nxg or nyf != nyg or nzf !=nzg:
         click.echo(click.style("\nError: Half maps are not the same size, check your inputs.\n",fg="red"))
         sys.exit()
-        
+
     # Check numThresholdsForSphericityCalcs is bigger than 0
     if options.numThresholdsForSphericityCalcs < 1 and options.numThresholdsForSphericityCalcs != 0:
         click.echo(click.style("\nError: Please key in a positive integer for the --numThresholdsForSphericityCalcs option.\n",fg="red"))
@@ -144,7 +144,7 @@ def execute(options):
     else:
             click.echo(click.style("\nPlease key in either True or False for --Skip3DFSCGeneration option.\n",fg="red"))
             sys.exit()
-    
+
     # Part 02
     click.echo(click.style("\nStep 02: Generating Analysis Files",fg="blue"))
     ThreeDFSC_Analysis.main(halfmap1,halfmap2,fullmap,options.apix,options.ThreeDFSC,\
@@ -184,7 +184,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     print("\n*******************************************\n")
     print("Running 3DFSC with the following parameters:\n")
-    
+
     for key in options.__dict__:
         print("%s : %s"%(key,options.__dict__[key]))
     print("\n*******************************************\n")
