@@ -68,7 +68,7 @@ def masking(inmrc,mask,masked_outmrc):
     mrc_write.close()
     return os.path.abspath(str(masked_outmrc))
 
-def execute(options):
+def execute(options, parser):
     if not options.numThresholdsForSphericityCalcs:
         options.numThresholdsForSphericityCalcs = 0
 
@@ -157,8 +157,8 @@ def execute(options):
     print ("Please email prbprb2@gmail.com, ytan@nysbc.org and dlyumkis@salk.edu if there are any problems/suggestions. Thank you.\n")
     return
 
-if __name__ == '__main__':
 
+def main():
     parser = OptionParser(usage="usage: %prog [options]", version="%prog " + version)
     helpmsg=click.style("First half map of 3D reconstruction. MRC format. Can be masked or unmasked. ") + click.style("Required", fg="blue", bold=True)
     parser.add_option("--halfmap1", dest="halfmap1", action="store", type="string", help=helpmsg, metavar="HALFMAP1.MRC")
@@ -199,7 +199,9 @@ if __name__ == '__main__':
                 raise BaseException("\n\nGPU ID %s does not exist. Make sure CUDA and Numba are installed correctly, and then check available GPU's with `nvidia-smi`.\n\n"%(gpu_id))
         else:
             print("Auto-detecting GPU ID")
-    execute(options)
+    execute(options, parser)
     if options.gpu:
         numba.cuda.close()
 
+if __name__ == '__main__':
+    main()
