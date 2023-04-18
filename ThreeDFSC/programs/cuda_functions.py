@@ -1,10 +1,12 @@
-import cuda_kernels
 import math
 import mrcfile
 from numba import cuda
 import numpy as np
 import time
-from utility_functions import blockPrint,enablePrint,print_progress
+
+import ThreeDFSC.programs.cuda_kernels as cuda_kernels
+from ThreeDFSC.programs.utility_functions import blockPrint,enablePrint,print_progress
+
 
 # From Release script
 def AveragesOnShellsUsingLogicBCuda(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZofR, \

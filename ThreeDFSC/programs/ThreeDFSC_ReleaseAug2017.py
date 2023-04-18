@@ -34,8 +34,9 @@ import matplotlib.pyplot as plt
 import mrcfile
 import click
 
-from utility_functions import blockPrint,enablePrint,print_progress
-import cuda_functions
+
+from ThreeDFSC.programs.utility_functions import blockPrint,enablePrint,print_progress
+import ThreeDFSC.programs.cuda_functions as cuda_functions
 
 #%%       Section -1 Function Definitions
 

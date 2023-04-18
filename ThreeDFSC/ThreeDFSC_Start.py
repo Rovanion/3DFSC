@@ -46,10 +46,8 @@ import mrcfile
 import time
 import click
 
-# add the programs submodule directory to the path so we can import its files from anywhere
-sys.path.insert(0,os.path.join(os.path.dirname(os.path.abspath(__file__)),'programs'))
-import ThreeDFSC_ReleaseAug2017
-import ThreeDFSC_Analysis # Version 6.0 Latest
+import ThreeDFSC.programs.ThreeDFSC_ReleaseAug2017 as tdfsc_2017
+import ThreeDFSC.programs.ThreeDFSC_Analysis as tdfsc_analysis # Version 6.0 Latest
 
 #saveout = sys.stdout
 #sys.stdout = open('threedfscstdout.log', 'w')
@@ -123,7 +121,7 @@ def execute(options, parser):
     # Part 01
     if (options.Skip3DFSCGeneration == "False"):
             click.echo(click.style("\nStep 01: Generating 3DFSC Volume",fg="blue"))
-            ThreeDFSC_ReleaseAug2017.main(halfmap1,halfmap2,options.ThreeDFSC,options.apix,options.dthetaInDegrees,gpu=options.gpu)
+            tdfsc_2017.main(halfmap1,halfmap2,options.ThreeDFSC,options.apix,options.dthetaInDegrees,gpu=options.gpu)
             directory = "Results_" + options.ThreeDFSC
             if not os.path.exists(directory):
                 os.makedirs(directory)
@@ -147,7 +145,7 @@ def execute(options, parser):
 
     # Part 02
     click.echo(click.style("\nStep 02: Generating Analysis Files",fg="blue"))
-    ThreeDFSC_Analysis.main(halfmap1,halfmap2,fullmap,options.apix,options.ThreeDFSC,\
+    tdfsc_analysis.main(halfmap1,halfmap2,fullmap,options.apix,options.ThreeDFSC,\
                             options.dthetaInDegrees,options.histogram,options.FSCCutoff,\
                             options.ThresholdForSphericity,options.HighPassFilter,\
                             options.numThresholdsForSphericityCalcs,options.gpu)
