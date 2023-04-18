@@ -20,7 +20,7 @@ setup(name='3DFSC',
       author='Philip Baldwin',
       author_email='pbaldwin@salk.edu',
       url='https://github.com/nysbc/Anisotropy',
-      packages=['ThreeDFSC'],
+      packages=['ThreeDFSC', 'ThreeDFSC.programs'],
       entry_points={
         'console_scripts': [ 'run3DFSC=ThreeDFSC.ThreeDFSC_Start:main']
       },
