@@ -5,11 +5,11 @@
 # A conical resolution program written by P. R. Baldwin in November 2016
 # Downloaded from https://github.com/nysbc/Anisotropy
 # ThreeDFSC_ReleaseJul2017.py
-#                                 HalfMap1.mrc    HalfMap2.mrc   OutputStringLabel       A/pixel DeltaTheta                                       
+#                                 HalfMap1.mrc    HalfMap2.mrc   OutputStringLabel       A/pixel DeltaTheta
 #
 # Creates       ResEMOutresultAve+OutputStringLabel.csv (which is the usual FSC)
-#                       ResEMOut+OutputStringLabel.hdf which is the 3D FSC file ResEMR (the real part of the cccs) 
-#                       Plots+OutputStringLabel.jpg which is the slices along x, y, z 
+#                       ResEMOut+OutputStringLabel.hdf which is the 3D FSC file ResEMR (the real part of the cccs)
+#                       Plots+OutputStringLabel.jpg which is the slices along x, y, z
 #
 # This requires the existence of numba, but not numbapro
 #
@@ -17,7 +17,7 @@
 # notice the @autojit decorations and  precompile the code,
 #
 # Uses mrcfile 1.0.0 by Colin Palmer (https://github.com/ccpem/mrcfile)
-# 
+#
 # For Phil: Line 547 for jSurf in range(Num2Surf+1): ### Fixed the problem!
 
 from sys import argv
@@ -41,7 +41,7 @@ import cuda_functions
 
 @autojit
 def ExtractAxes(f):
-        
+
         [nx,ny,nz]      = f.shape;
 
         nx2=nx//2;
@@ -51,13 +51,13 @@ def ExtractAxes(f):
         xf=np.zeros(nx2+1)
         yf=np.zeros(ny2+1)
         zf=np.zeros(nz2+1)
-        
+
         for ix in range(nx2):
                 xf[ix]=f[ix+nx2,ny2,nz2];
-                
+
         for iy in range(ny2):
                 yf[iy]=f[nx2,iy+ny2,nz2];
-                
+
         for iz in range(nz2):
                 zf[iz]=f[nx2,ny2,iz+nz2];
 
@@ -67,7 +67,7 @@ def ExtractAxes(f):
 
 @autojit
 def AddAxes(f,jDir, Val):
-        
+
         [nx,ny,nz]      = f.shape;
 
         fOut = f.copy()
@@ -79,13 +79,13 @@ def AddAxes(f,jDir, Val):
 
         if jDir==0:
                 fOut[:    ,ny2-1,nz2-1]=Val;
-                
+
         if jDir==1:
                 fOut[nx2-1, :   ,nz2-1]=Val;
-                
+
         if jDir==2:
                 fOut[nx2-1,ny2-1, :       ]=Val;
-                
+
         return fOut
 
 #%%      Section -1 Function Definitions
@@ -102,7 +102,7 @@ def ZeroPad(nx,ny,nz,fT,gT):
                                 gp[ix,iy,iz]=gT[ix,iy,iz]
         return [fp,gp]
 
-#Functions read in 0.078624 seconds for size nx=256 
+#Functions read in 0.078624 seconds for size nx=256
 #%%      Section -1 Function Definitions
 
 @autojit
@@ -182,14 +182,14 @@ def CreateFSCOutputs(inc,nx,ny,nz,d1,d2,nx2,ny2,nz2,dx2,dy2,dz2):
         return [ret,n1,n2,lr]
 
 
-#%%      Section -1 Function Definitions 
+#%%      Section -1 Function Definitions
 #                       Find values of product at individual points, organized on shells in FS
 
 @autojit
 def createFSCarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,d1,d2,nx2,ny2,nz2):
 
         lrMaxOver2= int(lr[-1]//2);
-                        
+
         kXofR   = np.zeros([inc+1,lrMaxOver2],dtype=int)
         kYofR   = np.zeros([inc+1,lrMaxOver2],dtype=int)
         kZofR   = np.zeros([inc+1,lrMaxOver2],dtype=int)
@@ -197,9 +197,9 @@ def createFSCarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,d1,d2,nx2,ny2,nz2):
         retofRI = np.zeros([inc+1,lrMaxOver2])
         n1ofR   = np.zeros([inc+1,lrMaxOver2])
         n2ofR   = np.zeros([inc+1,lrMaxOver2])
-        
+
         NumAtEachR = np.zeros(inc+1,dtype=int);
-#                               
+#
         rmax=0;
         for iz in range(nz):
                 kz=iz;
@@ -232,11 +232,11 @@ def createFSCarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,d1,d2,nx2,ny2,nz2):
                                         n1rNow   += d1[ix+1,iy,iz] * d1[ix+1,iy,iz];
                                         n2rNow    = d2[ix  ,iy,iz] * d2[ix      ,iy,iz];
                                         n2rNow   += d2[ix+1,iy,iz] * d2[ix+1,iy,iz];
-                                        #retofRR[r]=retNowR;  retofRI[r]=retNowI;  
+                                        #retofRR[r]=retNowR;  retofRI[r]=retNowI;
                                         #n1ofR[r]=n1Now;   n2ofR[r]=n2Now;
                                         retofRR[r, LastInd]=retrRNow;
                                         retofRI[r, LastInd]=retrINow;
-                                        n1ofR[r, LastInd]=n1rNow;       
+                                        n1ofR[r, LastInd]=n1rNow;
                                         n2ofR[r, LastInd]=n2rNow;
 
                                         if r>rmax: rmax=r;
@@ -255,22 +255,22 @@ def createFSCarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,d1,d2,nx2,ny2,nz2):
 #                                n2r   += d2.get_value_at(ix+1,iy,iz) * d2.get_value_at(ix+1,iy,iz);
 #
 
-#%%      Section -1 Function Definitions 
+#%%      Section -1 Function Definitions
 #                       Find values of product at individual points, organized on shells in FS
 @autojit
 def createFTarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,dcH,dFPower,nx2,ny2,nz2):
 
         lrMaxOver2= int(lr[-1]//2);
-                        
+
         kXofR   = np.zeros([inc+1,lrMaxOver2],dtype=int)
         kYofR   = np.zeros([inc+1,lrMaxOver2],dtype=int)
         kZofR   = np.zeros([inc+1,lrMaxOver2],dtype=int)
         retcH   = np.zeros([inc+1,lrMaxOver2])
         retFT   = np.zeros([inc+1,lrMaxOver2])
         n12ofR  = np.zeros([inc+1,lrMaxOver2])
-        
+
         NumAtEachR = np.zeros(inc+1,dtype=int);
-#                               
+#
         rmax=0;
         for iz in range(nz):
                 kz=iz;
@@ -298,11 +298,11 @@ def createFTarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,dcH,dFPower,nx2,ny2,nz2):
                                         retcHNow  = dcH[ix      ,iy,iz];
                                         retFTNow  = dFPower[ix  ,iy,iz];
                                         n12rNow   = 1;
-                                        #retofRR[r]=retNowR;  retofRI[r]=retNowI;  
+                                        #retofRR[r]=retNowR;  retofRI[r]=retNowI;
                                         #n1ofR[r]=n1Now;   n2ofR[r]=n2Now;
                                         retcH[r, LastInd]=retcHNow;
                                         retFT[r, LastInd]=retFTNow;
-                                        n12ofR[r, LastInd]=n12rNow;       
+                                        n12ofR[r, LastInd]=n12rNow;
 
                                         if r>rmax: rmax=r;
         print(rmax)
@@ -324,7 +324,7 @@ def createFTarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,dcH,dFPower,nx2,ny2,nz2):
 
 #%%      Section -1 Function Definitions %      For a given shell, this function returns whether a pair are close or not
 
-@autojit        
+@autojit
 def AveragesOnShellsInnerLogicKernelnonCuda(kXNow,kYNow,kZNow, \
                                                                                 NumOnSurf,      Thresh,Start, End):
 #        NumAtROutPre = np.zeros(int(NumOnSurf*(NumOnSurf+1)/2),dtype=int)
@@ -342,9 +342,9 @@ def AveragesOnShellsInnerLogicKernelnonCuda(kXNow,kYNow,kZNow, \
         Thresh2=Thresh*Thresh
         #Count=0;
         for jSurf1 in range(NumOnSurf):
-                #retNow1RL =retofRR[r] 
-                kX1=kXNow[jSurf1]; 
-                kY1=kYNow[jSurf1]; 
+                #retNow1RL =retofRR[r]
+                kX1=kXNow[jSurf1];
+                kY1=kYNow[jSurf1];
                 kZ1=kZNow[jSurf1];#       Single Values
                 Prod11  = kX1*kX1+kY1*kY1+kZ1*kZ1;
                 if Prod11==0: continue
@@ -369,11 +369,11 @@ def AveragesOnShellsInnerLogicKernelnonCuda(kXNow,kYNow,kZNow, \
 
 
         #print("sum, sum of NumAtROutPre = %g " %(np.sum(np.sum(NumAtROutPre,axis=0))));
-        
 
 
 
-#%%      Section -1 Function Definitions 
+
+#%%      Section -1 Function Definitions
 @autojit
 def AveragesOnShellsInnerLogicC(retNowR,retNowI,n1Now, n2Now,Start, End ,NumAtROutPre):
         NumNow= End -Start;
@@ -383,25 +383,25 @@ def AveragesOnShellsInnerLogicC(retNowR,retNowI,n1Now, n2Now,Start, End ,NumAtRO
         n2ofROutPre       = np.zeros(NumNow)
         #NumAtROutPre  = np.zeros((NumOnSurf,End-Start), dtype=np.int)
         #print('Hello')
-        
+
         for jSurf1 in range(NumNow):
                 MultVec=NumAtROutPre[:,jSurf1];# NumAtROutPre has shape 15871 by 7936
                 GoodInds = np.where(MultVec)[0] # MultVec has shape 15871
-                        
+
                 retofROutRPre[jSurf1] = np.sum(retNowR[GoodInds])
                 retofROutIPre[jSurf1] = np.sum(retNowI[GoodInds])
                 n1ofROutPre[jSurf1]       = np.sum(      n1Now[GoodInds])
                 n2ofROutPre[jSurf1]       = np.sum(      n2Now[GoodInds])
-                
+
                         # Infer jSurf2 from NeighborList
         return [retofROutRPre, retofROutIPre, n1ofROutPre,n2ofROutPre]
 
 
-#%%      Section -1 Function Definitions 
+#%%      Section -1 Function Definitions
 
 def AveragesOnShellsUsingLogicB(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZofR, \
                                                                         NumAtEachR,Thresh, RMax):
-        print('This loop will go to '+str(RMax)+'\n' )  
+        print('This loop will go to '+str(RMax)+'\n' )
         NumAtEachRMax=NumAtEachR[-1];
         retofROutR = np.zeros([inc+1,NumAtEachRMax]); #retofRR.copy();# Real part of output
         retofROutI = np.zeros([inc+1,NumAtEachRMax]); #retofRI.copy();# Imag part of output
@@ -409,15 +409,15 @@ def AveragesOnShellsUsingLogicB(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZo
         n2ofROut   = np.zeros([inc+1,NumAtEachRMax]); #n2ofR.copy();
         NumAtROut  = np.zeros([inc+1,NumAtEachRMax]); #
         NumAtEachRMaxCuda= 15871;
-        
+
         retofROutR[0,0] = retofRR[0,0];
         retofROutI[0,0] = retofRI[0,0];
         n1ofROut[0,0]   = n1ofR[0,0];
         n2ofROut[0,0]   = n2ofR[0,0];
-        
+
         #blockdim=(8,8);
         #griddim=(8,8);
-        
+
         enablePrint()
         with click.progressbar(length=((RMax)**6)) as bar:
                 for r in range(1,RMax+1):
@@ -426,20 +426,20 @@ def AveragesOnShellsUsingLogicB(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZo
                         #if ((r-1)%5)==0: print(r)
                         NumOnSurf = int(NumAtEachR[r]);
                         #LastInd = NumAtEachR[r]-1 ;
-                        kXNow   = kXofR[r][:NumOnSurf]; 
-                        kYNow   = kYofR[r][:NumOnSurf]; 
+                        kXNow   = kXofR[r][:NumOnSurf];
+                        kYNow   = kYofR[r][:NumOnSurf];
                         kZNow   = kZofR[r][:NumOnSurf];#         Vectors
-                        retNowR = retofRR[r][:NumOnSurf];  
-                        retNowI = retofRI[r][:NumOnSurf]; 
-                        n1Now   = n1ofR[r][:NumOnSurf]; 
-                        n2Now   = n2ofR[r][:NumOnSurf];#   for given 
+                        retNowR = retofRR[r][:NumOnSurf];
+                        retNowI = retofRI[r][:NumOnSurf];
+                        n1Now   = n1ofR[r][:NumOnSurf];
+                        n2Now   = n2ofR[r][:NumOnSurf];#   for given
                         #print(NumOnSurf)
                         #
 
                         ## Progress bar
                         bar.update((r**6)-((r-1)**6))
                         ##
-                        
+
                         NumLoops=1+int(NumOnSurf*NumOnSurf/NumAtEachRMaxCuda/NumAtEachRMaxCuda);# kicks in at r=50
                         Stride=int(NumOnSurf/NumLoops);
                         startTime = time.time()
@@ -477,7 +477,7 @@ def AveragesOnShellsUsingLogicB(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZo
                                 #qqq =np.where(qq==0)[0];
                                 #print("how many zeros of MultVec , %g " %(len(qqq) )  );
                         deltaTime =time.time()-startTime;
-                        #if ((r-1)%5)==0: 
+                        #if ((r-1)%5)==0:
                         #       print("NumAtROutPre created in %f seconds, retofROutRPre  in %f seconds for size r=%g " \
                         #               % (deltaTimeN,deltaTime,r))
                         #enablePrint()
@@ -485,11 +485,11 @@ def AveragesOnShellsUsingLogicB(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZo
         #print(retofROutRPre)
         return [retofROutR, retofROutI, n1ofROut,n2ofROut,NumAtROut]
 
-        
-        
 
 
-#%%      Section -1      Function Definitions 
+
+
+#%%      Section -1      Function Definitions
 #aa= np.array([ [1, 2, 3],[4,5,6]])
 #Out[401]: array([[1, 2, 3],
 #                               [4, 5, 6]])
@@ -502,16 +502,16 @@ def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofR
 
         ResultR  = retofROutR.copy();
         ResultI  = retofROutI.copy();
-        
+
         nx2 = int(nx/2);
         ny2 = int(ny/2);
         nz2 = int(nz/2);
 
 
-        nxOut=nx-1; 
-        nyOut=ny-1; 
-        nzOut=nz-1; 
-        
+        nxOut=nx-1;
+        nyOut=ny-1;
+        nzOut=nz-1;
+
         if nx%2: nxOut+=1;# if nx was odd, nxOut=nx
         if ny%2: nyOut+=1;# if ny was odd, nyOut=ny
         if nz%2: nzOut+=1;# if nz was odd, nzOut=nz
@@ -520,7 +520,7 @@ def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofR
         ResEMI = np.zeros([nxOut,nyOut,nzOut]);
         ResNum = np.zeros([nxOut,nyOut,nzOut]);
         ResDen = np.zeros([nxOut,nyOut,nzOut]);
-        
+
         ResEMR[nx2-1,ny2-1,nz2-1] = 1.0;
         ResNum[nx2-1,ny2-1,nz2-1] =retofROutR[0][0]
         ResDen[nx2-1,ny2-1,nz2-1] = np.sqrt(n1ofROut[0][0] * n2ofROut[0][0])
@@ -531,20 +531,20 @@ def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofR
         ShapeRetRI = retofROutI.shape;
         ShapeN1R   = n1ofROut.shape;
         ShapeN2R   = n2ofROut.shape;
-        
+
         print(ShapeRI,ShapeRR,ShapeRetRR,ShapeRetRI,ShapeN1R,ShapeN2R,inc)
         print('Hello')
         #return [ResEMR,ResEMI,ResNum,ResDen]
         #ResultR[0][0]=1;
         #ResEMR.set_value_at(nx2-1,ny2-1,nz2-1,1);
-        # Values in real space are going to 
+        # Values in real space are going to
         for r in range(1,min(inc+1,RMax)):
                 LastInd= NumAtEachR[r]-1;
                 if (r%5 ==1): print(r, LastInd)
                 # retofROutR[r][:LastInd]  = np.sum(retofROutRPre,axis=0);
                 retNowR = retofROutR[r][:LastInd];
                 retNowI = retofROutI[r][:LastInd] ;#Vectors for
-                n1Now = n1ofROut[r][:LastInd] ; 
+                n1Now = n1ofROut[r][:LastInd] ;
                 n2Now = n2ofROut[r][:LastInd] ;#given radius
                 Num2Surf = LastInd;
                 for jSurf in range(Num2Surf+1): ### Fixed the problem!
@@ -565,7 +565,7 @@ def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofR
                         kX =int(round(kXofR[r][jSurf]));
                         kY =kYofR[r][jSurf];
                         kZ =kZofR[r][jSurf];
-                        if (kX==nx2)|(kY==nx2)|(kZ==nx2): 
+                        if (kX==nx2)|(kY==nx2)|(kZ==nx2):
                                 continue;
                         if kX>0:
                                 ResEMR[kX+nx2-1,kY+ny2-1,kZ+nz2-1] =  ResultR[r][jSurf];
@@ -574,7 +574,7 @@ def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofR
                                 ResEMI[nx2-1-kX,ny2-1-kY,nz2-1-kZ] = -ResultI[r][jSurf]
                                 ResNum[kX+nx2-1,kY+ny2-1,kZ+nz2-1] =  retofROutR[r][jSurf]
                                 ResNum[nx2-1-kX,ny2-1-kY,nz2-1-kZ] =  retofROutR[r][jSurf]
-                                ResDen[kX+nx2-1,kY+ny2-1,kZ+nz2-1] =  np.sqrt(n1ofROut[r][jSurf] * n2ofROut[r][jSurf])  
+                                ResDen[kX+nx2-1,kY+ny2-1,kZ+nz2-1] =  np.sqrt(n1ofROut[r][jSurf] * n2ofROut[r][jSurf])
                                 ResDen[nx2-1-kX,ny2-1-kY,nz2-1-kZ] =  np.sqrt(n1ofROut[r][jSurf] * n2ofROut[r][jSurf])
                         else:#kx=0
                                 ResEMR[nx2-1, kY+ny2-1, kZ+nz2-1] = ResultR[r][jSurf]
@@ -616,14 +616,14 @@ def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofR
 #
 
 #
-# 
+#
 # ThreeDFSC_ScriptAFinalDec2016.py
-#                                 HalfMap1.hdf    HalfMap2.hdf   OutputStringLabel                                               
+#                                 HalfMap1.hdf    HalfMap2.hdf   OutputStringLabel
 # DeltaTheta is hard coded to 20 degrees
 #
 # Creates       ResEMOutresultAve+OutputStringLabel.csv (which is the usual FSC)
-#                       ResEMOut+OutputStringLabel.hdf which is the 3D FSC file ResEMR (the real part of the cccs) 
-#                       Plots+OutputStringLabel.jpg which is the slices along x, y, z 
+#                       ResEMOut+OutputStringLabel.hdf which is the 3D FSC file ResEMR (the real part of the cccs)
+#                       Plots+OutputStringLabel.jpg which is the slices along x, y, z
 
 def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=False):
 
@@ -640,7 +640,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
         #fNHalfMap1=argv[1];
         #fNHalfMap2=argv[2];
 
-        #OutputStringLabel= argv[3]; 
+        #OutputStringLabel= argv[3];
 
         #APixels = float(argv[4]);
 
@@ -672,7 +672,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
 
         #.94;# acos(Thresh)= 20 degrees
-        # the fraction of the sphere is int_0_d 
+        # the fraction of the sphere is int_0_d
 
         # &&&&&&&&                Section 1; Usual FSC
 
@@ -720,7 +720,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
                 h5f_HalfMap1.close()
                 h5f_HalfMap2.close()
                 #h5f_HalfMap1.visit(print)
-                
+
         if 1:
                 h5f_HalfMap1= mrcfile.open(fNHalfMap1)
                 f= h5f_HalfMap1.data
@@ -740,7 +740,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 #               enablePrint()
 #               print("\n\033[1;31;40mError: Half maps are not the same size, check your inputs.\033[0;37;40m\n")
 #               sys.exit()
-                
+
         startTime = time.time()
 
         fT=f.T;# Now it is like EMAN
@@ -754,10 +754,10 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
 
         #%%              Section  Add Axes For Checking
-        #         
+        #
         if 0:
                 fTPlus=AddAxes(fT,2,10)
-                
+
                 h5f_write = h5py.File('fTPlus.hdf','w')
                 h5f_write.create_dataset('MDF/images/0/image',data=fTPlus)
                 # <HDF5 dataset "array": shape (63, 63, 63), type "<f8">
@@ -773,7 +773,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
 
         [fp,gp]=ZeroPad(nx,ny,nz,fT,gT)
-                
+
         deltaTime =time.time()-startTime;
         print("NormPad created in %f seconds for size nx=%g " % (deltaTime,nx))
 
@@ -793,7 +793,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
         deltaTime =time.time()-startTime;
         print("FFTs performed in %f seconds for size nx=%g " % (deltaTime,nx))
 
-        #FFTs performed in 4.559401 seconds for size nx=256 
+        #FFTs performed in 4.559401 seconds for size nx=256
 
         #%%               Section 3 Create Real Arrays as in original EMAN program
 
@@ -810,7 +810,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
         # FFTArray2Real performed in 22.700670 seconds for size nx=256 , wo autojit
         # FFTArray2Real performed in 0.9           seconds for size nx=256 , w autojit
-        # 
+        #
 
         # d1[15][16][17]  is d1.get_value_at(15,16,17)
         # But d1[15][16][17], for EMData objects is complex...
@@ -869,7 +869,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
         ii = -1;
         for i in range(inc+1):
-                if (lr[i]>0): 
+                if (lr[i]>0):
                         ii +=1;
                         result[ii]                = float(i)/float(2*inc);
                         result[ii+linc]   = float(ret[i] / (np.sqrt(n1[i] * n2[i])));
@@ -896,8 +896,8 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
                 RMax=bb[0]+4
         except:
                 RMax=inc
-                
-        
+
+
         RMax= min(RMax,inc)
         print('simple FSC written out to '+resultAveOut)
         print('RMax = %d'%(RMax))
@@ -965,7 +965,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
         [kXofR,kYofR,kZofR,retcH,retFT,n12ofR] = \
                 createFTarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,dcH,dFPower,nx2,ny2,nz2)
-                
+
         deltaTime =time.time()-startTime;
 
         print("FSC arrays created in %f seconds for size nx=%g " % (deltaTime,nx))
@@ -1002,7 +1002,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
         #          N(X-1) - (X)(X-1)/2 + Y
         # The greatest Element would be when X=Y=N
         #        N(N-1)/2 +N = N(N+1)/2
-        # For N=1; gives 1. For N=2, 
+        # For N=1; gives 1. For N=2,
 
         #vv=NumAtEachRMax;
         #hh= int(vv*(vv+1)/2)
@@ -1041,30 +1041,30 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
         #  list(n2ofROut[2][:NumAtEachR[2]]) perfect
         #  list(NumAtROut[2][:NumAtEachR[2]]) perfect
 
-                
+
         deltaTime =time.time()-startTime;
 
         print("AveragesOnShells created in %f seconds for size nx=%g " % (deltaTime,nx))
 
-        # no autojit AveragesOnShells created in 134.065687 seconds for size nx=64 
-        #  autojit AveragesOnShells created in 58.065687 seconds for size nx=64 
-        # autojit AveragesOnShells created in 0.232876 seconds for size nx=32 
-        # autojit on inner loop (or both loops) AveragesOnShells created in 2.050189 seconds for size nx=64 
-        # autojit AveragesOnShells created in 26.903263 seconds for size nx=128 
+        # no autojit AveragesOnShells created in 134.065687 seconds for size nx=64
+        #  autojit AveragesOnShells created in 58.065687 seconds for size nx=64
+        # autojit AveragesOnShells created in 0.232876 seconds for size nx=32
+        # autojit on inner loop (or both loops) AveragesOnShells created in 2.050189 seconds for size nx=64
+        # autojit AveragesOnShells created in 26.903263 seconds for size nx=128
         # cudajit Average On shells created in 14.11 seconds for size nx=256
-        # cudajit AveragesOnShells created in 0.058333 seconds for size nx=32 
+        # cudajit AveragesOnShells created in 0.058333 seconds for size nx=32
         # cudajit AveragesOnShells created in 2.212252 seconds for size nx=256
         # AveragesOnShells created in 1602.677335 seconds for size nx=128  without matrix multiply
         # AveragesOnShells created in 149  seconds for size nx=128      with matrix multiply
         #
         #  NumAtROutPre.shape 1311 1311
-        #sum, sum of NumAtROutPre = 104763 
-        #r =15, jLoop = 0 
-        #NumAtROutPre created in 2.635284 seconds, retofROutRPre  in 0.044771 seconds for size r=15 
+        #sum, sum of NumAtROutPre = 104763
+        #r =15, jLoop = 0
+        #NumAtROutPre created in 2.635284 seconds, retofROutRPre  in 0.044771 seconds for size r=15
 
-        #NumAtROutPre created in 87.902457 seconds for size r=128 
-        #retofROutRPre created in 19.214520 seconds for size r=128 
-        #AveragesOnShells created in 107.825461 seconds for size nx=256 
+        #NumAtROutPre created in 87.902457 seconds for size r=128
+        #retofROutRPre created in 19.214520 seconds for size r=128
+        #AveragesOnShells created in 107.825461 seconds for size nx=256
 
         if 0:
 
@@ -1087,19 +1087,19 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
                 h5f_write.create_dataset('MDF/images/0/image',data=n12ofROut)
                 # <HDF5 dataset "array": shape (63, 63, 63), type "<f8">
                 h5f_write.close()
-                
+
                 h5f_write = h5py.File(ResultsDir+'Radial'+'n1'+OutputStringLabel+'Out.hdf','w')
                 h5f_write.create_dataset('MDF/images/0/image',data=n1ofROut)
                 # <HDF5 dataset "array": shape (63, 63, 63), type "<f8">
                 h5f_write.close()
-                
+
                 h5f_write = h5py.File(ResultsDir+'Radial'+'n2'+OutputStringLabel+'Out.hdf','w')
                 h5f_write.create_dataset('MDF/images/0/image',data=n2ofROut)
                 # <HDF5 dataset "array": shape (63, 63, 63), type "<f8">
                 h5f_write.close()
 
 
-                
+
 
         if 0:
                 fig = plt.figure()
@@ -1126,9 +1126,9 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
         print("NormalizeShells created in %f seconds for size nx=%g, RMax=%g " % (deltaTime,nx, RMax))
 
         # NormalizeShells created in 3.175528 seconds for size nx=64; wo autojit
-        # NormalizeShells created in 3.175528 seconds for size nx=64    
-        # NormalizeShells created in 3.602324 seconds for size nx=32 
-        # NormalizeShells created in 0.401217 seconds for size nx=32 
+        # NormalizeShells created in 3.175528 seconds for size nx=64
+        # NormalizeShells created in 3.602324 seconds for size nx=32
+        # NormalizeShells created in 0.401217 seconds for size nx=32
         # NormalizeShells created in 3.374886 seconds for size nx=256 ; wo autojit
         # NormalizeShells created in infinity  seconds for size nx=256 ; w autojit
         #list(ResEMR[65,65,:]) for GS IR protein
@@ -1137,8 +1137,8 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
         #%%
         #        Section 8.              Write Out FSC volumes to file
-        #               
-                                
+        #
+
         #csvfile=open(OutP1csvFN,'w')
         #P1writer= csv.writer(csvfile,delimiter=' ',quotechar='|');
         #P1writer.writerow(PolynomialL1);
@@ -1255,7 +1255,7 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
         ## Flush out plots
         plt.clf()
         plt.cla()
-        plt.close()     
+        plt.close()
 
         #%%
 
@@ -1273,4 +1273,3 @@ def main(fNHalfMap1,fNHalfMap2,OutputStringLabel,APixels,dthetaInDegrees,gpu=Fal
 
 if __name__ == "__main__":
         main(argv[1],argv[2],argv[3],float(argv[4]),float(argv[5]),arvg[6])
-        

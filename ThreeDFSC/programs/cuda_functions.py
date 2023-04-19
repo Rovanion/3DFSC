@@ -47,7 +47,7 @@ def AveragesOnShellsUsingLogicBCuda(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR
         retNowR = retofRR[r][:NumOnSurf];
         retNowI = retofRI[r][:NumOnSurf];
         n1Now    = n1ofR[r][:NumOnSurf];
-        n2Now    = n2ofR[r][:NumOnSurf];#   for given 
+        n2Now    = n2ofR[r][:NumOnSurf];#   for given
 
 
         ## Progress bar
@@ -119,7 +119,7 @@ def AveragesOnShellsUsingLogicBCuda(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR
             NumAtROut[r][Start:End] = cuda_kernels.sum_rows(NumAtROutPre_global_mem,Start,End)
             print("Time to compute sum_rows on GPU: ",time.time()-sum_start)
         deltaTime =time.time()-startTime;
-        #if ((r-1)%5)==0: 
+        #if ((r-1)%5)==0:
         #    print("NumAtROutPre created in %f seconds, retofROutRPre  in %f seconds for size r=%g " \
         #        % (deltaTimeN,deltaTime,r))
 
@@ -280,4 +280,3 @@ def threshold_binarize_array_cuda(dataarray, FSCCutoff, ThresholdForSphericity, 
 
 
         return outarraythresholded,outarraythresholdedbinarized
-
