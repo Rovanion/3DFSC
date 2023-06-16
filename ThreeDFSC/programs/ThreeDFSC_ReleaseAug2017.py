@@ -14,7 +14,7 @@
 # This requires the existence of numba, but not numbapro
 #
 # The functions need to be kept separated so that the precompiler can
-# notice the @autojit decorations and  precompile the code,
+# notice the @jit decorations and  precompile the code,
 #
 # Uses mrcfile 1.0.0 by Colin Palmer (https://github.com/ccpem/mrcfile)
 #
@@ -28,7 +28,7 @@ import sys
 import numpy as np
 from math import *
 from numba import *
-from numba import autojit
+from numba import jit
 import h5py
 import matplotlib.pyplot as plt
 import mrcfile
@@ -40,7 +40,7 @@ import ThreeDFSC.programs.cuda_functions as cuda_functions
 
 #%%       Section -1 Function Definitions
 
-@autojit
+@jit
 def ExtractAxes(f):
 
         [nx,ny,nz]      = f.shape;
@@ -66,7 +66,7 @@ def ExtractAxes(f):
 
 #%%      Section -1 Function Definitions
 
-@autojit
+@jit
 def AddAxes(f,jDir, Val):
 
         [nx,ny,nz]      = f.shape;
@@ -91,7 +91,7 @@ def AddAxes(f,jDir, Val):
 
 #%%      Section -1 Function Definitions
 
-@autojit
+@jit
 def ZeroPad(nx,ny,nz,fT,gT):
         fp=np.zeros([nx+2,ny,nz]);
         gp=np.zeros([nx+2,ny,nz]);
@@ -106,7 +106,7 @@ def ZeroPad(nx,ny,nz,fT,gT):
 #Functions read in 0.078624 seconds for size nx=256
 #%%      Section -1 Function Definitions
 
-@autojit
+@jit
 def FFTArray2Real(nx,ny,nz,F):
 
         d1=np.zeros([nx+4,ny,nz]);# 36,32,32
@@ -123,7 +123,7 @@ def FFTArray2Real(nx,ny,nz,F):
 
 #%%      Section -1 Function Definitions %       Create FT outputs
 
-@autojit
+@jit
 def CreateFTLikeOutputs(inc,nx,ny,nz,ToBeAveraged,nx2,ny2,nz2,dx2,dy2,dz2):# created from CreateFSCOutputs
 
         ret = np.zeros(inc+1)
@@ -150,7 +150,7 @@ def CreateFTLikeOutputs(inc,nx,ny,nz,ToBeAveraged,nx2,ny2,nz2,dx2,dy2,dz2):# cre
 
 #%%      Section -1 Function Definitions %       Create FSC outputs for Pawel program
 
-@autojit
+@jit
 def CreateFSCOutputs(inc,nx,ny,nz,d1,d2,nx2,ny2,nz2,dx2,dy2,dz2):
 
         ret = np.zeros(inc+1)
@@ -186,7 +186,7 @@ def CreateFSCOutputs(inc,nx,ny,nz,d1,d2,nx2,ny2,nz2,dx2,dy2,dz2):
 #%%      Section -1 Function Definitions
 #                       Find values of product at individual points, organized on shells in FS
 
-@autojit
+@jit
 def createFSCarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,d1,d2,nx2,ny2,nz2):
 
         lrMaxOver2= int(lr[-1]//2);
@@ -258,7 +258,7 @@ def createFSCarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,d1,d2,nx2,ny2,nz2):
 
 #%%      Section -1 Function Definitions
 #                       Find values of product at individual points, organized on shells in FS
-@autojit
+@jit
 def createFTarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,dcH,dFPower,nx2,ny2,nz2):
 
         lrMaxOver2= int(lr[-1]//2);
@@ -325,7 +325,7 @@ def createFTarrays(nx,ny,nz,lsd2,lr,inc,dx2,dy2,dz2,dcH,dFPower,nx2,ny2,nz2):
 
 #%%      Section -1 Function Definitions %      For a given shell, this function returns whether a pair are close or not
 
-@autojit
+@jit
 def AveragesOnShellsInnerLogicKernelnonCuda(kXNow,kYNow,kZNow, \
                                                                                 NumOnSurf,      Thresh,Start, End):
 #        NumAtROutPre = np.zeros(int(NumOnSurf*(NumOnSurf+1)/2),dtype=int)
@@ -375,7 +375,7 @@ def AveragesOnShellsInnerLogicKernelnonCuda(kXNow,kYNow,kZNow, \
 
 
 #%%      Section -1 Function Definitions
-@autojit
+@jit
 def AveragesOnShellsInnerLogicC(retNowR,retNowI,n1Now, n2Now,Start, End ,NumAtROutPre):
         NumNow= End -Start;
         retofROutRPre = np.zeros(NumNow)
@@ -498,7 +498,7 @@ def AveragesOnShellsUsingLogicB(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZo
 # array([4, 5])
 
 # Keep autojit off!!!!!!
-@autojit
+@jit
 def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofROut,n2ofROut,NumAtEachR, RMax):
 
         ResultR  = retofROutR.copy();
