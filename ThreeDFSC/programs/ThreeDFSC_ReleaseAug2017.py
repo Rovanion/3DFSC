@@ -498,7 +498,7 @@ def AveragesOnShellsUsingLogicB(inc,retofRR,retofRI,n1ofR,n2ofR, kXofR,kYofR,kZo
 # array([4, 5])
 
 # Keep autojit off!!!!!!
-@jit
+
 def NormalizeShells(nx,ny,nz,kXofR,kYofR,kZofR,inc,retofROutR, retofROutI, n1ofROut,n2ofROut,NumAtEachR, RMax):
 
         ResultR  = retofROutR.copy();
